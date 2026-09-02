@@ -22,3 +22,6 @@ Halo, Salam Kenal!<br><br>Halo! Nama saya Zulfikar Ardhana. Saat ini saya bersek
 [![](https://komarev.com/ghpvc/?username=ZulfiiiBieberBot &icon=0&color=0)](https://visitcount.itsvg.in)
 
 <!-- Proudly created with GPRM ( https://gprm.itsvg.in ) -->
+
+
+https://raw.githubusercontent.com/Platane/snk/output/github-contribution-grid-snake-dark.svg
