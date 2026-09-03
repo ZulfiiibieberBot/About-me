@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zulfikar Ardhana | Portfolio Background</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0b0f19;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+            overflow-x: hidden;
+            /* Mencegah layar HP ketarik ke bawah (auto-refresh) saat jarimu menggeser partikel */
+            overscroll-behavior-y: contain; 
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: all;
+        }
+        .content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+            pointer-events: none;
+        }
+        h1, p, a {
+            pointer-events: auto;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+        }
+        p {
+            font-size: 1.1rem;
+            color: #8fa0dd;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 10px 25px;
+            background: linear-gradient(45deg, #00ffcc, #0077ff);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas untuk Efek Partikel -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Konten Utama Portfolio -->
+    <div class="content">
+        <h1>Halo, Gw Zulfikar!</h1>
+        <p>Welcome to my interactive playground. Touch or move your cursor!</p>
+        <a href="https://github.com" class="btn" target="_blank">Lihat GitHub Gw</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particlesArray = [];
+        const numberOfParticles = 60; // Dikurangi sedikit agar mulus dan hemat baterai HP
+
+        const mouse = {
+            x: null,
+            y: null,
+            radius: 100 // Jarak jangkauan interaksi jari/mouse
+        }
+
+        // 1. EVENT UNTUK LAPTOP (MOUSE)
+        window.addEventListener('mousemove', function(event) {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        window.addEventListener('mouseout', function() {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        // 2. EVENT UNTUK HP (TOUCH SCREEN)
+        window.addEventListener('touchmove', function(event) {
+            // Mengambil koordinat dari titik sentuhan pertama jari kamu
+            mouse.x = event.touches[0].clientX;
+            mouse.y = event.touches[0].clientY;
+        });
+
+        window.addEventListener('touchend', function() {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        // AUTO RE-SIZE CANVAS
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
+        });
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() * 1.2) - 0.6;
+                this.speedY = (Math.random() * 1.2) - 0.6;
+                this.baseSize = this.size;
+            }
+
+            draw() {
+                ctx.fillStyle = '#00ffcc'; // Warna partikel (hijau tosca neon)
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Memantul di batas layar
+                if (this.x < 0 || this.x > canvas.width) this.speedX = -this.speedX;
+                if (this.y < 0 || this.y > canvas.height) this.speedY = -this.speedY;
+
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Efek membesar saat didekati jari/mouse
+                if (distance < mouse.radius) {
+                    if (this.size < 8) this.size += 0.5;
+                } else if (this.size > this.baseSize) {
+                    this.size -= 0.2;
+                }
+            }
+        }
+
+        function init() {
+            particlesArray = [];
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        // Logika menarik garis antar partikel terdekat
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let dx = particlesArray[a].x - particlesArray[b].x;
+                    let dy = particlesArray[a].y - particlesArray[b].y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 90) {
+                        opacityValue = 1 - (distance / 90);
+                        ctx.strokeStyle = `rgba(0, 119, 255, ${opacityValue})`; // Warna garis jaring (biru)
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // Loop animasi konstan
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            connect();
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
